@@ -1,0 +1,8 @@
+---
+- name: Enable ufw firewall for wireguard server
+  ufw: rule={{ item.rule }} port={{ item.port }} proto={{ item.proto }}
+  with_items:
+    - { rule: 'limit', port: '{{ wg.server.port }}', proto: 'tcp' }
+    - { rule: 'limit', port: '{{ wg.server.port }}', proto: 'udp' }
+  notify:
+    - restart ufw

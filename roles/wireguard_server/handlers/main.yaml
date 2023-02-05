@@ -1,0 +1,16 @@
+---
+- name: restart wg
+  shell: wg-quick down wg0; wg-quick up wg0
+  args:
+    executable: /bin/bash
+
+- name: reload wg config
+  shell: wg syncconf wg0 <(wg-quick strip wg0)
+  args:
+    executable: /bin/bash
+
+- name: restart ufw
+  service:
+    name: ufw
+    state: restarted
+

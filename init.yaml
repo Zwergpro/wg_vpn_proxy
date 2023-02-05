@@ -1,0 +1,10 @@
+---
+# base server setup
+- hosts: wg-1
+  vars_files:
+    - vars/system_vars.yaml
+  roles:
+    - role: system
+      vars:
+        ansible_user: "root"
+    - ufw

@@ -1,0 +1,58 @@
+---
+- name: Update and upgrade apt packages
+  become: true
+  apt:
+    upgrade: dist
+    update_cache: yes
+    force_apt_get: yes
+
+- name: Install libs
+  apt: 
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - acl
+    - sudo
+    - htop
+    - net-tools
+
+- name: Add 'sudo' group
+  group:
+    name: sudo
+    state: present
+
+- name: Allow 'sudo' group to have passwordless sudo
+  lineinfile:
+    dest: /etc/sudoers
+    state: present
+    regexp: '^%sudo'
+    line: '%sudo ALL=(ALL) NOPASSWD: ALL'
+    validate: 'visudo -cf %s'
+
+- name: Add main user
+  user: 
+    name: "{{ sys.user }}"
+    password: "{{ sys.password }}"
+    groups: sudo
+    append: yes
+    state: present
+    shell: /bin/bash  
+    createhome: yes
+
+- name: Set up authorized keys for the main user
+  authorized_key: 
+    user: "{{ sys.user }}"
+    key: "{{item}}"
+  with_file:
+    - "{{ ssh.pubkey }}"
+
+- name: add ssh_config
+  template:
+    src: sshd_config.j2
+    dest: /etc/ssh/sshd_config
+    owner: 0
+    group: 0
+    mode: 0644
+    validate: '/usr/sbin/sshd -T -f %s'
+  notify:
+    - restart sshd

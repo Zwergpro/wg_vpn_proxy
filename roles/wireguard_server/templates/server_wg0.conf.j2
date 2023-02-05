@@ -1,0 +1,16 @@
+# {{ ansible_managed }}
+[Interface]
+Address = {{ wg.server.address }}
+ListenPort = {{ wg.server.port }}
+PrivateKey = {{ wg.server.privatekey }}
+PostUp = iptables -A FORWARD -i wg0 -j ACCEPT; iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE; # Add forwarding when VPN is started
+PostDown = iptables -D FORWARD -i wg0 -j ACCEPT; iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE; # Remove forwarding when VPN is shutdown
+
+
+{% for peer in wg.peers %}
+
+[Peer]
+PublicKey = {{ peer.pubkey }}
+AllowedIPs = {{ peer.ips }}
+
+{% endfor %}

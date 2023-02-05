@@ -1,0 +1,39 @@
+---
+- name: Install wireguard
+  apt:
+    name: wireguard
+    state: present
+    update_cache: yes
+
+- name: umask /etc/wireguard
+  shell:
+    cmd: umask 077
+    chdir: /etc/wireguard
+
+- name: add wg private key
+  copy:
+    content: "{{ wg_privatekey }}"
+    dest: "/etc/wireguard/{{ wg.server.name }}_private_key"
+
+- name: add wg public key
+  copy:
+    content: "{{ wg_publickey }}"
+    dest: "/etc/wireguard/{{ wg.server.name }}_public_key"
+
+- name: create client wireguard config
+  template:
+    dest: /etc/wireguard/wg0.conf
+    src: client_wg0.conf.j2
+    owner: root
+    group: root
+    mode: '0600'
+  notify:
+    - restart wg
+
+- name: enable and persist ip forwarding
+  sysctl:
+    name: net.ipv4.ip_forward
+    value: "1"
+    state: present
+    sysctl_set: yes
+    reload: yes
