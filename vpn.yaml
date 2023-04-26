@@ -2,9 +2,14 @@
 - hosts: wg-1
   vars_files:
     - vars/system_vars.yaml
+    - vars/wg_vars.yaml
+    - vars/docker_compose_vars.yaml
   roles:
     - role: system
       vars:
         ansible_become: true
     - ufw
-#    - wireguard_server
+    - docker
+    - role: wireguard_server
+      vars:
+        ansible_become: true

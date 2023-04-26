@@ -1,0 +1,56 @@
+---
+- name: Install libs for docker
+  apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - lsb-release
+      - gnupg
+    state: latest
+    update_cache: true
+
+- name: Add signing key
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+
+- name: Add repository into sources list
+  apt_repository:
+    repo: deb https://download.docker.com/linux/ubuntu focal stable
+    state: present
+    filename: docker
+
+- name: update cache
+  apt:
+    update_cache: yes
+
+- name: Install Docker
+  apt:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-buildx-plugin
+      - docker-compose-plugin
+      - python3-pip
+      - virtualenv
+      - python3-setuptools
+    state: latest
+    update_cache: true
+
+- name: Add 'docker' group
+  group:
+    name: docker
+    state: present
+
+- name: Add 'docker' group to main user
+  user:
+    name: "{{ sys.user }}"
+    groups:
+      docker
+    append: yes
+
+
+- name: Make sure docker python module is installed
+  pip:
+    name: docker

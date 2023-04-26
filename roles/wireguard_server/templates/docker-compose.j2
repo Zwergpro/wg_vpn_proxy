@@ -1,0 +1,22 @@
+version: "3"
+
+services:
+  wg:
+    image: ngoduykhanh/wireguard-ui:latest
+    container_name: wgui
+    cap_add:
+      - NET_ADMIN
+    network_mode: host
+    environment:
+      - SESSION_SECRET={{ wgui.session_secret }}
+      - WGUI_USERNAME={{ wgui.username }}
+      - WGUI_PASSWORD={{ wgui.password }}
+      - WGUI_MANAGE_START={{ wgui.manage_start }}
+      - WGUI_MANAGE_RESTART={{ wgui.manage_restart }}
+    logging:
+      driver: json-file
+      options:
+        max-size: 50m
+    volumes:
+      - /var/db:/app/db
+      - /etc/wireguard:/etc/wireguard

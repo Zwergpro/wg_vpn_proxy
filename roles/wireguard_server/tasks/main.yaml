@@ -1,46 +1,18 @@
 ---
 - include_tasks: ufw_wireguard_server.yaml
+- include_tasks: install_wg.yaml
 
-- name: Install wireguard
-  apt:
-    name: wireguard
-    state: present
-    update_cache: yes
 
-- name: umask /etc/wireguard
-  shell:
-    cmd: umask 077
-    chdir: /etc/wireguard
-
-- name: add wg private key
-  copy:
-    content: "{{ wg.server.privatekey }}"
-    dest: "/etc/wireguard/{{ wg.server.name }}_private_key"
-
-- name: add wg public key
-  copy:
-    content: "{{ wg.server.publickey }}"
-    dest: "/etc/wireguard/{{ wg.server.name }}_public_key"
-
-- name: create server wireguard config
+- name: copy docker-compose
   template:
-    dest: /etc/wireguard/wg0.conf
-    src: server_wg0.conf.j2
-    owner: root
-    group: root
-    mode: '0600'
-  notify:
-    - restart wg
+    dest: "/home/{{ sys.user }}/docker-compose.yaml"
+    src: docker-compose.j2
+    owner: "{{ sys.user }}"
+    group: "{{ sys.user }}"
+    mode: '0776'
 
-- name: enable and persist ip forwarding
-  sysctl:
-    name: net.ipv4.ip_forward
-    value: "1"
-    state: present
-    sysctl_set: yes
-    reload: yes
 
-- name: enable wg on start up
-  systemd:
-    name: wg-quick@wg0
-    enabled: yes
+#- name: start wgui
+#  shell:
+#    cmd: docker compose up -d
+#    chdir: "/home/{{ sys.user }}/"
